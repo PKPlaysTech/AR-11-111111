@@ -161,13 +161,6 @@ export default function ARScanner() {
               url={`/markers/marker${q.markerId}.patt`}
               id={`marker-${q.markerId}`}
             >
-              <a-entity 
-                gltf-model={`url(/models/model-${q.markerId}.glb)`} 
-                position="0 0 0" 
-                scale="0.8 0.8 0.8"
-                rotation="-100 0 0" 
-                animation-mixer="clip: *;"
-              ></a-entity>
             </a-marker>
           ))}
           <a-entity camera></a-entity>
