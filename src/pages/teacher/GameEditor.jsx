@@ -130,7 +130,7 @@ export default function GameEditor() {
           ) : (
             <>
               <h1 className="text-3xl font-extrabold text-slate-800 mb-8">
-                {gameCode ? "Edit Treasure Hunt" : "Design Treasure Hunt"}
+                {gameCode ? "Edit AR interactive quest" : "AR interactive quest"}
               </h1>
               
               <form onSubmit={handleSave} className="space-y-6">
