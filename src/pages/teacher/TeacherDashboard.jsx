@@ -22,7 +22,6 @@ export default function TeacherDashboard() {
   };
 
   const handleDelete = async (code) => {
-    // 1. 增加身份验证弹窗
     const password = prompt("Warning: You are about to delete this game. Enter Admin Password:");
     
     if (password !== "PK2026") {
@@ -30,7 +29,6 @@ export default function TeacherDashboard() {
       return;
     }
 
-    // 2. 增加确认确认，防止手滑
     if (window.confirm("Are you sure you want to delete this game? This action cannot be undone.")) {
       try {
         await deleteGame(code);
