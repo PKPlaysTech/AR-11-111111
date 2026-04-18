@@ -10,6 +10,7 @@ export default function GameEditor() {
   const [initialLoading, setInitialLoading] = useState(!!gameCode);
   const [game, setGame] = useState({
     title: "",
+    description: "",
     questions: [
       {
         markerId: 1,
@@ -39,7 +40,7 @@ export default function GameEditor() {
               correctOption: data.correctOption 
             }];
           }
-          setGame({ title: data.title || "", questions: qs || [] });
+          setGame({ title: data.title || "", description: data.description || "", questions: qs || [] });
         }
         setInitialLoading(false);
       };
@@ -141,6 +142,16 @@ export default function GameEditor() {
                 value={game.title} onChange={e => setGame({...game, title: e.target.value})}
                 className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
                 placeholder="e.g. Science Chapter 1"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Game Description (Optional)</label>
+              <textarea 
+                value={game.description || ""} onChange={e => setGame({...game, description: e.target.value})}
+                className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
+                placeholder="e.g. A fun hunt to explore the school garden!"
+                rows={2}
               />
             </div>
             
