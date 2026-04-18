@@ -3,14 +3,14 @@ import { getDatabase } from "firebase/database";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDflLbJlPMNgUtlSzDRdE1L9Djc3IAhHgA",
-  authDomain: "ar-project-11-111111.firebaseapp.com",
-  projectId: "ar-project-11-111111",
-  storageBucket: "ar-project-11-111111.firebasestorage.app",
-  messagingSenderId: "941107620302",
-  appId: "1:941107620302:web:12d43683c3fa4d7ad8a39f",
-  measurementId: "G-PN5576QTTY",
-  databaseURL: "https://ar-project-11-111111-default-rtdb.firebaseio.com"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY, 
+  authDomain: "ar-11-111111.firebaseapp.com",
+  projectId: "ar-11-111111",
+  storageBucket: "ar-11-111111.firebasestorage.app",
+  messagingSenderId: "967787882232",
+  appId: "1:967787882232:web:9fa4efe1dcc2ec11503d0d",
+  measurementId: "G-E2P39X778W",
+  databaseURL: "https://ar-11-111111-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
@@ -19,3 +19,4 @@ const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
 
 // Initialize Realtime Database
 export const db = getDatabase(app);
+export default app;

@@ -1,6 +1,7 @@
 {
   "name": "ar-project",
   "private": true,
+  "homepage": "https://PKPlaysTech.github.io/AR-11-111111/",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
