@@ -3,7 +3,7 @@ import { getDatabase } from "firebase/database";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForDevelopment",
   authDomain: "ar-11-111111.firebaseapp.com",
   projectId: "ar-11-111111",
   storageBucket: "ar-11-111111.firebasestorage.app",
