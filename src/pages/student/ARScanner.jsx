@@ -163,7 +163,7 @@ export default function ARScanner() {
             >
               <a-entity
                 gltf-model={`url(${import.meta.env.BASE_URL}models/model-1.glb)`}
-                scale="0.05 0.05 0.05"
+                scale="0.5 0.5 0.5"
                 position="0 0 0"
                 rotation="0 0 0"
                 animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"

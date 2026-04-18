@@ -22,10 +22,20 @@ export default function TeacherDashboard() {
   };
 
   const handleDelete = async (code) => {
+    // 1. 增加身份验证弹窗
+    const password = prompt("Warning: You are about to delete this game. Enter Admin Password:");
+    
+    if (password !== "PK2026") {
+      alert("Incorrect password. Delete cancelled.");
+      return;
+    }
+
+    // 2. 增加确认确认，防止手滑
     if (window.confirm("Are you sure you want to delete this game? This action cannot be undone.")) {
       try {
         await deleteGame(code);
         setGames(games.filter((g) => g.id !== code));
+        alert("Game deleted successfully.");
       } catch (error) {
         console.error("Error deleting game:", error);
         alert("Failed to delete game.");

@@ -49,6 +49,16 @@ export default function GameEditor() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    
+    // 1. This is your "Key In" place!
+    const adminPassword = prompt("Enter Admin Password to Save Changes:");
+    
+    // 2. Check the "Secret Key"
+    if (adminPassword !== "PK2026") {
+      alert("Wrong Password! Access Denied.");
+      return;
+    }
+
     setLoading(true);
     try {
       if (gameCode) {

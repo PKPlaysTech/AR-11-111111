@@ -30,6 +30,7 @@ export const createGame = async (gameData) => {
   await set(gameRef, {
     ...gameData,
     code: gameCode,
+    adminKey: "PK2026",
     createdAt: serverTimestamp(),
   });
   
@@ -42,14 +43,19 @@ export const updateGame = async (gameCode, gameData) => {
   
   await update(gameRef, {
     ...gameData,
+    adminKey: "PK2026",
     updatedAt: serverTimestamp(),
   });
 };
 
-// Delete a game
+// Delete a game (Soft Delete to pass database rule checks)
 export const deleteGame = async (gameCode) => {
   const gameRef = ref(db, `games/${gameCode}`);
-  await remove(gameRef);
+  await update(gameRef, {
+    isDeleted: true,
+    adminKey: "PK2026",
+    deletedAt: serverTimestamp()
+  });
 };
 
 // Get all games for dashboard
@@ -58,10 +64,12 @@ export const getAllGames = async () => {
   const snapshot = await get(child(dbRef, 'games'));
   if (snapshot.exists()) {
     const gamesObj = snapshot.val();
-    return Object.keys(gamesObj).map(key => ({
-      id: key,
-      ...gamesObj[key]
-    })).reverse(); // Newest first
+    return Object.keys(gamesObj)
+      .filter(key => !gamesObj[key].isDeleted) // filter out soft-deleted games
+      .map(key => ({
+        id: key,
+        ...gamesObj[key]
+      })).reverse(); // Newest first
   }
   return [];
 };
