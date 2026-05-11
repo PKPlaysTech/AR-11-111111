@@ -26,12 +26,27 @@ export default function ARScanner() {
   const teamName = location.state?.teamName || "Anonymous Team";
 
   useEffect(() => {
+    // Ensure html, body, and root are completely transparent
+    // iOS Safari often has a default white background on the html element
+    document.documentElement.style.backgroundColor = "transparent";
     document.body.style.backgroundColor = "transparent";
+    // Remove overflow hidden which can cause iOS Safari to clip the AR video
+    const originalOverflow = document.body.style.overflowX;
+    document.body.style.overflowX = "visible";
+    
     const rootEl = document.getElementById("root");
     if (rootEl) rootEl.style.backgroundColor = "transparent";
     
+    // Force AR.js to recalculate video dimensions to fit the device screen perfectly
+    const resizeTimeout = setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 500);
+    
     return () => {
+      clearTimeout(resizeTimeout);
+      document.documentElement.style.backgroundColor = "";
       document.body.style.backgroundColor = "#f8fafc";
+      document.body.style.overflowX = originalOverflow || "hidden"; // Restore original or default
       if (rootEl) rootEl.style.backgroundColor = "";
     };
   }, []);
@@ -281,4 +296,3 @@ export default function ARScanner() {
       )}
     </>
   );
-}
