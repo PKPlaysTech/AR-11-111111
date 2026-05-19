@@ -40,3 +40,9 @@ body {
 .animate-map-pulse {
   animation: map-pulse 2s infinite;
 }
+
+/* Fix AR.js video scaling issue with Tailwind CSS */
+/* Tailwind forces max-width: 100% on videos, which breaks AR.js aspect ratio calculations */
+body > video {
+  max-width: none !important;
+}

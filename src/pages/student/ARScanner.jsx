@@ -177,11 +177,11 @@ export default function ARScanner() {
               id={`marker-${q.markerId}`}
             >
               <a-entity
-                gltf-model={`url(${import.meta.env.BASE_URL}models/model-1.glb)`}
+                gltf-model={`url(${import.meta.env.BASE_URL}models/model-${q.markerId}.glb)`}
                 scale="0.5 0.5 0.5"
                 position="0 0 0"
-                rotation="0 0 0"
-                animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"
+                rotation="-90 0 0"
+                animation-mixer="loop: repeat"
               ></a-entity>
             </a-marker>
           ))}
