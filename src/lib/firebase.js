@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAnalytics } from "firebase/analytics";
+import { getAuth, signInAnonymously } from "firebase/auth"; // ✨ 1. 引入身份验证模块
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForDevelopment",
@@ -19,4 +20,16 @@ const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
 
 // Initialize Realtime Database
 export const db = getDatabase(app);
+
+// ✨ 2. 初始化 Auth 并直接触发“隐形登录”
+export const auth = getAuth(app); 
+
+signInAnonymously(auth)
+  .then(() => {
+    console.log("AR Quest 隐形登录成功！当前临时用户 UID:", auth.currentUser.uid);
+  })
+  .catch((error) => {
+    console.error("Firebase 匿名登录失败，请检查控制台是否开启了 Anonymous 登录:", error.message);
+  });
+
 export default app;
