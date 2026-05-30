@@ -1,10 +1,11 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, signInAnonymously } from "firebase/auth"; // ✨ 1. 引入身份验证模块
+import { getAuth, signInAnonymously } from "firebase/auth"; // 1. Import Authentication module
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForDevelopment",
+  // Replace the string below with your real API key from Firebase Project Settings
+  apiKey: "YOUR_ACTUAL_API_KEY_HERE", 
   authDomain: "ar-11-111111.firebaseapp.com",
   projectId: "ar-11-111111",
   storageBucket: "ar-11-111111.firebasestorage.app",
@@ -21,15 +22,17 @@ const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
 // Initialize Realtime Database
 export const db = getDatabase(app);
 
-// ✨ 2. 初始化 Auth 并直接触发“隐形登录”
+// 2. Initialize Auth and trigger invisible anonymous sign-in
 export const auth = getAuth(app); 
 
-signInAnonymously(auth)
-  .then(() => {
-    console.log("AR Quest 隐形登录成功！当前临时用户 UID:", auth.currentUser.uid);
-  })
-  .catch((error) => {
-    console.error("Firebase 匿名登录失败，请检查控制台是否开启了 Anonymous 登录:", error.message);
-  });
+if (typeof window !== "undefined") {
+  signInAnonymously(auth)
+    .then(() => {
+      console.log("AR Quest anonymous sign-in successful! Current UID:", auth.currentUser.uid);
+    })
+    .catch((error) => {
+      console.error("Firebase anonymous sign-in failed. Please check if Anonymous provider is enabled in Firebase Console:", error.message);
+    });
+}
 
 export default app;
