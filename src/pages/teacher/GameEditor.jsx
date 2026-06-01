@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Plus, Loader2 } from "lucide-react";
 import { createGame, getGame, updateGame } from "../../lib/db";
+import { auth } from "../../lib/firebase"; // 【安全升级】：引入我们之前做好的 Auth 模块
 
 export default function GameEditor() {
   const { gameCode } = useParams();
@@ -29,7 +30,6 @@ export default function GameEditor() {
       const fetchGame = async () => {
         const data = await getGame(gameCode);
         if (data) {
-          // Normalize questions if needed (backward compatibility)
           let qs = data.questions;
           if (!qs && data.question) {
             qs = [{
@@ -51,10 +51,9 @@ export default function GameEditor() {
   const handleSave = async (e) => {
     e.preventDefault();
     
-    // 1. This is your "Key In" place!
+    // 1. 让老师输入通行密码
     const adminPassword = prompt("Enter Admin Password to Save Changes:");
     
-    // 2. Check the "Secret Key"
     if (adminPassword !== "PK2026") {
       alert("Wrong Password! Access Denied.");
       return;
@@ -62,17 +61,27 @@ export default function GameEditor() {
 
     setLoading(true);
     try {
+      // 获取当前登录老师的临时数字身份证（UID）
+      const currentTeacherId = auth.currentUser ? auth.currentUser.uid : "anonymous_teacher";
+
+      // 【安全升级】：把密码和老师的 UID 打包进数据里，一起发给 Firebase 规则去审核
+      const gameDataWithSecurity = {
+        ...game,
+        adminKey: adminPassword,       // 对应规则里的 newData.child('adminKey')
+        teacherId: currentTeacherId    // 对应规则里的 newData.child('teacherId')
+      };
+
       if (gameCode) {
-        await updateGame(gameCode, game);
+        await updateGame(gameCode, gameDataWithSecurity);
         alert(`Game updated successfully!`);
       } else {
-        const newGameCode = await createGame(game);
+        const newGameCode = await createGame(gameDataWithSecurity);
         alert(`Game created! Your code is: ${newGameCode}`);
       }
       navigate("/teacher");
     } catch (error) {
       console.error("Error saving game", error);
-      alert(`Error saving game: ${error.message}`);
+      alert(`Error saving game: ${error.message}\n(Hint: Please make sure your database rules are published!)`);
     }
     setLoading(false);
   };
@@ -135,123 +144,123 @@ export default function GameEditor() {
               </h1>
               
               <form onSubmit={handleSave} className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Game Title</label>
-              <input 
-                type="text" required
-                value={game.title} onChange={e => setGame({...game, title: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
-                placeholder="e.g. Science Chapter 1"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Game Description (Optional)</label>
-              <textarea 
-                value={game.description || ""} onChange={e => setGame({...game, description: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
-                placeholder="e.g. A fun hunt to explore the school garden!"
-                rows={2}
-              />
-            </div>
-            
-            {game.questions.map((q, index) => (
-              <div key={index} className="bg-primary-50 p-6 rounded-2xl border border-primary-100 relative">
-                <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-xl font-bold text-slate-800">Marker {q.markerId} Setup</h2>
-                  {game.questions.length > 1 && index === game.questions.length - 1 && (
-                    <button 
-                      type="button" 
-                      onClick={removeLastQuestion}
-                      className="text-red-500 hover:text-red-700 text-sm font-bold"
-                    >
-                      Remove
-                    </button>
-                  )}
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Game Title</label>
+                  <input 
+                    type="text" required
+                    value={game.title} onChange={e => setGame({...game, title: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
+                    placeholder="e.g. Science Chapter 1"
+                  />
                 </div>
-                <p className="text-sm text-slate-500 mb-6">Linked to image: <code className="bg-white px-1 py-0.5 rounded">public/markers/marker{q.markerId}.patt</code></p>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Game Description (Optional)</label>
+                  <textarea 
+                    value={game.description || ""} onChange={e => setGame({...game, description: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
+                    placeholder="e.g. A fun hunt to explore the school garden!"
+                    rows={2}
+                  />
+                </div>
                 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Question</label>
-                    <textarea required
-                      value={q.question} onChange={e => updateQuestion(index, 'question', e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
-                      placeholder="e.g. What does a panda eat?"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Image URL (Optional)</label>
-                    <input type="text"
-                      value={q.imageUrl || ""} onChange={e => updateQuestion(index, 'imageUrl', e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
-                      placeholder="e.g. https://github.com/..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Audio URL (Optional)</label>
-                    <input type="text"
-                      value={q.audioUrl || ""} onChange={e => updateQuestion(index, 'audioUrl', e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
-                      placeholder="e.g. https://github.com/..."
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Initial Points</label>
-                    <input type="number" required min="10"
-                      value={q.points} onChange={e => updateQuestion(index, 'points', parseInt(e.target.value))}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                    {['a', 'b', 'c', 'd'].map(opt => (
-                      <div key={opt}>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Option {opt.toUpperCase()}</label>
-                        <input type="text" required
-                          value={q.options[opt]} onChange={e => updateOption(index, opt, e.target.value)}
+                {game.questions.map((q, index) => (
+                  <div key={index} className="bg-primary-50 p-6 rounded-2xl border border-primary-100 relative">
+                    <div className="flex justify-between items-center mb-2">
+                      <h2 className="text-xl font-bold text-slate-800">Marker {q.markerId} Setup</h2>
+                      {game.questions.length > 1 && index === game.questions.length - 1 && (
+                        <button 
+                          type="button" 
+                          onClick={removeLastQuestion}
+                          className="text-red-500 hover:text-red-700 text-sm font-bold"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-500 mb-6">Linked to image: <code className="bg-white px-1 py-0.5 rounded">public/markers/marker{q.markerId}.patt</code></p>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Question</label>
+                        <textarea required
+                          value={q.question} onChange={e => updateQuestion(index, 'question', e.target.value)}
                           className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
-                          placeholder={`Option ${opt.toUpperCase()}`}
+                          placeholder="e.g. What does a panda eat?"
+                          rows={2}
                         />
                       </div>
-                    ))}
-                  </div>
-                  
-                  <div className="pt-2">
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Correct Answer</label>
-                    <select 
-                      value={q.correctOption} onChange={e => updateQuestion(index, 'correctOption', e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none bg-white"
-                    >
-                      <option value="a">Option A</option>
-                      <option value="b">Option B</option>
-                      <option value="c">Option C</option>
-                      <option value="d">Option D</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            ))}
 
-            <button 
-              type="button" 
-              onClick={addQuestion}
-              className="w-full border-2 border-dashed border-primary-300 text-primary-600 hover:bg-primary-50 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all"
-            >
-              <Plus className="w-5 h-5" /> Add Another Question
-            </button>
-            
-            <button 
-              type="submit" disabled={loading}
-              className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:shadow-lg disabled:opacity-50 mt-8"
-            >
-              {loading ? "Saving..." : <><Save className="w-5 h-5" /> {gameCode ? "Save Changes" : "Publish Game"}</>}
-            </button>
-          </form>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Image URL (Optional)</label>
+                        <input type="text"
+                          value={q.imageUrl || ""} onChange={e => updateQuestion(index, 'imageUrl', e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
+                          placeholder="e.g. https://github.com/..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Audio URL (Optional)</label>
+                        <input type="text"
+                          value={q.audioUrl || ""} onChange={e => updateQuestion(index, 'audioUrl', e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
+                          placeholder="e.g. https://github.com/..."
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Initial Points</label>
+                        <input type="number" required min="10"
+                          value={q.points} onChange={e => updateQuestion(index, 'points', parseInt(e.target.value))}
+                          className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        {['a', 'b', 'c', 'd'].map(opt => (
+                          <div key={opt}>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Option {opt.toUpperCase()}</label>
+                            <input type="text" required
+                              value={q.options[opt]} onChange={e => updateOption(index, opt, e.target.value)}
+                              className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none"
+                              placeholder={`Option ${opt.toUpperCase()}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <div className="pt-2">
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Correct Answer</label>
+                        <select 
+                          value={q.correctOption} onChange={e => updateQuestion(index, 'correctOption', e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-400 focus:outline-none bg-white"
+                        >
+                          <option value="a">Option A</option>
+                          <option value="b">Option B</option>
+                          <option value="c">Option C</option>
+                          <option value="d">Option D</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button 
+                  type="button" 
+                  onClick={addQuestion}
+                  className="w-full border-2 border-dashed border-primary-300 text-primary-600 hover:bg-primary-50 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all"
+                >
+                  <Plus className="w-5 h-5" /> Add Another Question
+                </button>
+                
+                <button 
+                  type="submit" disabled={loading}
+                  className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:shadow-lg disabled:opacity-50 mt-8"
+                >
+                  {loading ? "Saving..." : <><Save className="w-5 h-5" /> {gameCode ? "Save Changes" : "Publish Game"}</>}
+                </button>
+              </form>
             </>
           )}
         </div>
