@@ -53,7 +53,14 @@ export default function Leaderboard() {
                   }`}>
                     #{idx + 1}
                   </span>
-                  <span className="font-bold text-slate-700 text-lg">{entry.teamName}</span>
+                  <span className="font-bold text-slate-700 text-lg">
+                    {entry.teamName}
+                    {entry.className && (
+                      <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full ml-2">
+                        {entry.className}
+                      </span>
+                    )}
+                  </span>
                 </div>
                 <span className="font-black text-primary-600 text-xl">{entry.score} pts</span>
               </div>

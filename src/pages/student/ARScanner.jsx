@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getGame, saveScore, saveQuizRecord } from "../../lib/db";
-import confetti from "canvas-combetti";
+import confetti from "canvas-confetti";
 
 export default function ARScanner() {
   const { gameCode } = useParams();
@@ -24,6 +24,7 @@ export default function ARScanner() {
   const [wrongAnswers, setWrongAnswers] = useState([]);
 
   const teamName = location.state?.teamName || "Anonymous Team";
+  const className = location.state?.className || "No Class";
   // 【安全升级】：从入场口把带过来的学生暗号提取出来
   const studentKey = location.state?.studentKey || "student2026"; 
 
@@ -119,6 +120,7 @@ export default function ARScanner() {
       await saveQuizRecord(
         gameCode, 
         teamName, 
+        className,
         activeQuestion.question, 
         isAnswerCorrect,
         selectedAnswerText,
@@ -144,7 +146,7 @@ export default function ARScanner() {
 
       // 2. 【安全升级】：上传累积总分时，带上密码凭证
       try {
-        await saveScore(gameCode, teamName, newTotal, studentKey); // 传入学生暗号，对应规则里的 scores 验证
+        await saveScore(gameCode, teamName, newTotal, className, studentKey); // 传入学生暗号，对应规则里的 scores 验证
       } catch (err) {
         console.error("Failed to save score", err);
         alert("Score upload failed! Please make sure your student passcode is correct.");

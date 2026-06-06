@@ -22,7 +22,7 @@ export default function TeacherDashboard() {
   };
 
   const handleDelete = async (code) => {
-    const password = prompt("Warning: You are about to delete this game. Enter Admin Password:");
+    const password = sessionStorage.getItem("teacher_passcode") || prompt("Warning: You are about to delete this game. Enter Admin Password:");
     
     if (password !== "PK2026") {
       alert("Incorrect password. Delete cancelled.");

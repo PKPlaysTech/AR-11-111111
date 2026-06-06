@@ -1,0 +1,30 @@
+{
+  "rules": {
+    "authorized_teachers": {
+      "$uid": {
+        ".write": "newData.child('passcode').val() === 'PK2026'",
+        ".read": "auth.uid === $uid"
+      }
+    },
+    "games": {
+      ".read": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === 'PK2026'",
+      ".write": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === 'PK2026'",
+      "$gameCode": {
+        ".read": "true",
+        ".write": "newData.child('adminKey').val() === 'PK2026' || data.child('adminKey').val() === 'PK2026' || root.child('authorized_teachers').child(auth.uid).child('passcode').val() === 'PK2026'",
+        "scores": {
+          "$teamKey": {
+            ".read": "true",
+            ".write": "newData.child('studentKey').val() === 'student2026'"
+          }
+        }
+      }
+    },
+    "quiz_records": {
+      ".read": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === 'PK2026'",
+      "$recordId": {
+        ".write": "newData.child('studentKey').val() === 'student2026'"
+      }
+    }
+  }
+}

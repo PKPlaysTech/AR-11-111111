@@ -4,13 +4,14 @@ import { ChevronRight, ArrowLeft, Users, Lock } from "lucide-react"; // 引入�
 
 export default function StudentJoin() {
   const [teamName, setTeamName] = useState("");
+  const [className, setClassName] = useState(""); // 添加班级状态
   const [gameCode, setGameCode] = useState("");
   const [studentPassword, setStudentPassword] = useState(""); // 添加学生通关暗号状态
   const navigate = useNavigate();
 
   const handleJoin = (e) => {
     e.preventDefault();
-    if (!teamName || !gameCode || !studentPassword) return;
+    if (!teamName || !className || !gameCode || !studentPassword) return;
     
     // 【密码校验】：如果输入的不是 student2026，直接拦截！
     if (studentPassword !== "student2026") {
@@ -20,7 +21,7 @@ export default function StudentJoin() {
 
     // 【密码向下传递】：把学生输入的密码顺带传给真正玩的页面，交分数时要用
     navigate(`/student/play/${gameCode}`, { 
-      state: { teamName, studentKey: studentPassword } 
+      state: { teamName, className, studentKey: studentPassword } 
     });
   };
 
@@ -46,6 +47,18 @@ export default function StudentJoin() {
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               placeholder="e.g. Red Dragons"
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-secondary-400 focus:outline-none transition-colors text-lg font-medium"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Class (班级)</label>
+            <input 
+              type="text" 
+              value={className}
+              onChange={(e) => setClassName(e.target.value)}
+              placeholder="e.g. Year 2A / 5B"
               className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-secondary-400 focus:outline-none transition-colors text-lg font-medium"
               required
             />
@@ -81,7 +94,7 @@ export default function StudentJoin() {
 
           <button 
             type="submit"
-            disabled={!teamName || !gameCode || !studentPassword}
+            disabled={!teamName || !className || !gameCode || !studentPassword}
             className="w-full bg-secondary-500 hover:bg-secondary-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Start the Hunt

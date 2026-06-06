@@ -52,7 +52,7 @@ export default function GameEditor() {
     e.preventDefault();
     
     // 1. 让老师输入通行密码
-    const adminPassword = prompt("Enter Admin Password to Save Changes:");
+    const adminPassword = sessionStorage.getItem("teacher_passcode") || prompt("Enter Admin Password to Save Changes:");
     
     if (adminPassword !== "PK2026") {
       alert("Wrong Password! Access Denied.");
