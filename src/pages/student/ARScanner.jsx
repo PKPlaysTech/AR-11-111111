@@ -24,6 +24,9 @@ export default function ARScanner() {
   const [wrongAnswers, setWrongAnswers] = useState([]);
 
   const teamName = location.state?.teamName || "Anonymous Team";
+  const className = location.state?.className || "No Class";
+  // 【安全升级】：从入场口把带过来的学生暗号提取出来
+  const studentKey = location.state?.studentKey || "student2026"; 
 
   useEffect(() => {
     // Ensure html, body, and root are completely transparent
@@ -55,7 +58,6 @@ export default function ARScanner() {
     const fetchGame = async () => {
       const g = await getGame(gameCode);
       if (g) {
-        // Fallback for older single-question games
         if (!g.questions && g.question) {
           g.questions = [{
              markerId: 1, 
@@ -85,7 +87,6 @@ export default function ARScanner() {
       const mId = parseInt(markerIdStr);
       
       const q = game.questions.find(x => x.markerId === mId);
-      // Only trigger if we haven't already answered this marker correctly
       if (q) {
         setMarkerFound(true);
         if (!answeredMarkerIds.includes(q.markerId)) {
@@ -110,7 +111,7 @@ export default function ARScanner() {
         m.removeEventListener("markerLost", handleMarkerLost);
       });
     };
-  }, [game, answeredMarkerIds]); // Bind after A-Frame elements render and progress updates
+  }, [game, answeredMarkerIds]);
 
   const handleAnswer = async (selectedOption) => {
     if (!activeQuestion) return;
@@ -118,14 +119,16 @@ export default function ARScanner() {
     const isAnswerCorrect = selectedOption === activeQuestion.correctOption;
     const selectedAnswerText = activeQuestion.options[selectedOption];
     
-    // Save record to Firebase immediately
+    // 1. 【安全升级】：上传答题历史时，带上密码凭证
     try {
       await saveQuizRecord(
         gameCode, 
         teamName, 
+        className,
         activeQuestion.question, 
         isAnswerCorrect,
-        selectedAnswerText
+        selectedAnswerText,
+        studentKey // 传入学生暗号，对应规则里的 quiz_records 验证
       );
     } catch (err) {
       console.error("Failed to save quiz record", err);
@@ -145,8 +148,13 @@ export default function ARScanner() {
       
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
-      // Save cumulative score to Firebase
-      await saveScore(gameCode, teamName, newTotal);
+      // 2. 【安全升级】：上传累积总分时，带上密码凭证
+      try {
+        await saveScore(gameCode, teamName, newTotal, className, studentKey); // 传入学生暗号，对应规则里的 scores 验证
+      } catch (err) {
+        console.error("Failed to save score", err);
+        alert("Score upload failed! Please make sure your student passcode is correct.");
+      }
       
     } else {
       setWrongAnswers(prev => [...prev, selectedOption]);
@@ -177,11 +185,11 @@ export default function ARScanner() {
               id={`marker-${q.markerId}`}
             >
               <a-entity
-                gltf-model={`url(${import.meta.env.BASE_URL}models/model-1.glb)`}
+                gltf-model={`url(${import.meta.env.BASE_URL}models/model-${q.markerId}.glb)`}
                 scale="0.5 0.5 0.5"
                 position="0 0 0"
-                rotation="0 0 0"
-                animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"
+                rotation="-90 0 0"
+                animation-mixer="loop: repeat"
               ></a-entity>
             </a-marker>
           ))}

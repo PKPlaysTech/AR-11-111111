@@ -33,7 +33,7 @@ export default function QuizRecords() {
     const questionStatsMap = {};
 
     records.forEach(r => {
-      const user = r.username || "Unknown";
+      const user = r.className ? `${r.username} [${r.className}]` : (r.username || "Unknown");
       if (!statsMap[user]) statsMap[user] = { total: 0, correct: 0 };
       statsMap[user].total += 1;
       if (r.isCorrect) statsMap[user].correct += 1;
@@ -233,6 +233,11 @@ export default function QuizRecords() {
                         </td>
                         <td className="p-4 font-bold text-slate-800">
                           {record.username}
+                          {record.className && (
+                            <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full ml-2">
+                              {record.className}
+                            </span>
+                          )}
                         </td>
                         <td className="p-4 text-slate-700 max-w-xs truncate" title={record.questionId}>
                           {record.questionId}

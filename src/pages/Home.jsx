@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
 import { Sparkles, Map, Presentation } from "lucide-react";
+import pic1 from '../assets/Pic1.png';
+import pic2 from '../assets/Pic2.png';
+import pic3 from '../assets/Pic3.png';
 
 export default function Home() {
   return (
@@ -7,6 +10,11 @@ export default function Home() {
       {/* Decorative background elements */}
       <div className="absolute top-10 left-10 w-24 h-24 bg-secondary-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-32 h-32 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse delay-700"></div>
+
+      {/* Scattered Pictures */}
+      <img src={pic1} alt="Pic1" className="absolute top-10 left-4 md:top-16 md:left-12 w-48 md:w-72 object-contain -rotate-12 opacity-30 pointer-events-none mix-blend-multiply" />
+      <img src={pic2} alt="Pic2" className="absolute bottom-10 left-10 md:bottom-16 md:left-20 w-56 md:w-80 object-contain rotate-6 opacity-30 pointer-events-none mix-blend-multiply" />
+      <img src={pic3} alt="Pic3" className="absolute top-40 right-4 md:top-32 md:right-16 w-52 md:w-72 object-contain rotate-12 opacity-30 pointer-events-none mix-blend-multiply" />
 
       <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl p-8 md:p-12 text-center z-10 border border-primary-100">
         <div className="inline-flex items-center justify-center p-4 bg-primary-100 rounded-full mb-6">

@@ -86,14 +86,16 @@ export const getGame = async (gameCode) => {
 };
 
 // Save student score
-export const saveScore = async (gameCode, teamName, newTotalScore) => {
+export const saveScore = async (gameCode, teamName, newTotalScore, className, studentKey) => {
   // Use teamName as key so it overwrites instead of creating a new entry
-  const teamKey = teamName.replace(/\\W+/g, '-').toLowerCase();
+  const teamKey = teamName.replace(/\W+/g, '-').toLowerCase();
   const teamScoreRef = ref(db, `games/${gameCode.toUpperCase()}/scores/${teamKey}`);
   
   await set(teamScoreRef, {
     teamName,
+    className,
     score: newTotalScore,
+    studentKey,
     timestamp: serverTimestamp()
   });
 };
@@ -138,14 +140,16 @@ export const subscribeToLeaderboard = (gameCode, callback) => {
 };
 
 // Save a quiz record (student attempt)
-export const saveQuizRecord = async (gameCode, username, questionText, isCorrect, selectedAnswer) => {
+export const saveQuizRecord = async (gameCode, username, className, questionText, isCorrect, selectedAnswer, studentKey) => {
   const recordsRef = ref(db, 'quiz_records');
   await push(recordsRef, {
     gameCode,
     username,
+    className,
     questionId: questionText,
     isCorrect,
     selectedAnswer: selectedAnswer || "",
+    studentKey,
     timestamp: serverTimestamp()
   });
 };
@@ -162,4 +166,13 @@ export const getAllQuizRecords = async () => {
     })).sort((a, b) => b.timestamp - a.timestamp);
   }
   return [];
+};
+
+// Register a teacher's UID and verify passcode
+export const authorizeTeacher = async (uid, passcode) => {
+  const teacherRef = ref(db, `authorized_teachers/${uid}`);
+  await set(teacherRef, {
+    passcode,
+    timestamp: serverTimestamp()
+  });
 };

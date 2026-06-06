@@ -1,0 +1,39 @@
+{
+  "rules": {
+    "secrets": {
+      // Prevents anyone (except the console administrator) from reading or writing the passwords
+      ".read": "false",
+      ".write": "false"
+    },
+    "authorized_teachers": {
+      "$uid": {
+        ".write": "newData.child('passcode').val() === root.child('secrets/teacher_passcode').val()",
+        ".read": "auth.uid === $uid"
+      }
+    },
+    "games": {
+      // Teachers authenticated with the passcode can read and write all games
+      ".read": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === root.child('secrets/teacher_passcode').val()",
+      ".write": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === root.child('secrets/teacher_passcode').val()",
+      "$gameCode": {
+        // Students can read individual games by code
+        ".read": "true",
+        ".write": "newData.child('adminKey').val() === root.child('secrets/teacher_passcode').val() || data.child('adminKey').val() === root.child('secrets/teacher_passcode').val() || root.child('authorized_teachers').child(auth.uid).child('passcode').val() === root.child('secrets/teacher_passcode').val()",
+        "scores": {
+          "$teamKey": {
+            ".read": "true",
+            ".write": "newData.child('studentKey').val() === root.child('secrets/student_passcode').val()"
+          }
+        }
+      }
+    },
+    "quiz_records": {
+      // Teachers can read student records
+      ".read": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === root.child('secrets/teacher_passcode').val()",
+      "$recordId": {
+        // Students can submit attempt records by providing the student passcode
+        ".write": "newData.child('studentKey').val() === root.child('secrets/student_passcode').val()"
+      }
+    }
+  }
+}
