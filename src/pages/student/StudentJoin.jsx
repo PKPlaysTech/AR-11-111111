@@ -53,7 +53,7 @@ export default function StudentJoin() {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Class (班级)</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Class</label>
             <input 
               type="text" 
               value={className}
@@ -76,15 +76,15 @@ export default function StudentJoin() {
             />
           </div>
 
-          {/* 【新增加的功能】：让 Year 2 的小朋友输入通关密码的输入框 */}
+          {/* Student passcode input */}
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Student Passcode (学生暗号)</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Student Passcode</label>
             <div className="relative">
               <input 
                 type="password" 
                 value={studentPassword}
                 onChange={(e) => setStudentPassword(e.target.value)}
-                placeholder="Enter student2026"
+                placeholder="Enter passcode"
                 className="w-full px-4 py-3 pl-11 rounded-xl border-2 border-slate-200 focus:border-secondary-400 focus:outline-none transition-colors text-lg font-medium"
                 required
               />

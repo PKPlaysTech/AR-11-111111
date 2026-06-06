@@ -3,6 +3,7 @@ import { Lock, Unlock, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import { authorizeTeacher } from "../lib/db";
+import { signInAnonymously } from "firebase/auth";
 
 export default function TeacherRouteGuard({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -11,15 +12,41 @@ export default function TeacherRouteGuard({ children }) {
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(!auth.currentUser);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    let active = true;
+    
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        setCheckingAuth(false);
+        if (active) setCheckingAuth(false);
+      } else {
+        // If not logged in, try to sign in anonymously
+        try {
+          await signInAnonymously(auth);
+        } catch (err) {
+          console.error("Anonymous authentication failed:", err);
+          if (active) {
+            setError("Firebase connection failed. Please check your internet connection or API key.");
+            setCheckingAuth(false);
+          }
+        }
       }
     });
-    return () => unsubscribe();
+
+    // Safety timeout: stop showing loading screen after 4 seconds even if Firebase is unresponsive
+    const safetyTimeout = setTimeout(() => {
+      if (active) {
+        console.warn("Auth initialization timed out.");
+        setCheckingAuth(false);
+      }
+    }, 4000);
+
+    return () => {
+      active = false;
+      unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   const handleSubmit = async (e) => {
@@ -33,9 +60,15 @@ export default function TeacherRouteGuard({ children }) {
     setError("");
 
     try {
-      const currentUser = auth.currentUser;
+      let currentUser = auth.currentUser;
       if (!currentUser) {
-        throw new Error("Authentication state is not ready. Please refresh the page.");
+        // Try on-the-fly anonymous sign-in if not currently authenticated
+        const credentials = await signInAnonymously(auth);
+        currentUser = credentials.user;
+      }
+
+      if (!currentUser) {
+        throw new Error("Could not connect to Firebase Auth. Check if Anonymous Auth is enabled in the Firebase Console.");
       }
 
       // Authorize this user's UID in Firebase Realtime Database

@@ -1,29 +1,38 @@
 {
   "rules": {
+    "secrets": {
+      // Prevents anyone (except the console administrator) from reading or writing the passwords
+      ".read": "false",
+      ".write": "false"
+    },
     "authorized_teachers": {
       "$uid": {
-        ".write": "newData.child('passcode').val() === 'PK2026'",
+        ".write": "newData.child('passcode').val() === root.child('secrets/teacher_passcode').val()",
         ".read": "auth.uid === $uid"
       }
     },
     "games": {
-      ".read": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === 'PK2026'",
-      ".write": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === 'PK2026'",
+      // Teachers authenticated with the passcode can read and write all games
+      ".read": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === root.child('secrets/teacher_passcode').val()",
+      ".write": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === root.child('secrets/teacher_passcode').val()",
       "$gameCode": {
+        // Students can read individual games by code
         ".read": "true",
-        ".write": "newData.child('adminKey').val() === 'PK2026' || data.child('adminKey').val() === 'PK2026' || root.child('authorized_teachers').child(auth.uid).child('passcode').val() === 'PK2026'",
+        ".write": "newData.child('adminKey').val() === root.child('secrets/teacher_passcode').val() || data.child('adminKey').val() === root.child('secrets/teacher_passcode').val() || root.child('authorized_teachers').child(auth.uid).child('passcode').val() === root.child('secrets/teacher_passcode').val()",
         "scores": {
           "$teamKey": {
             ".read": "true",
-            ".write": "newData.child('studentKey').val() === 'student2026'"
+            ".write": "newData.child('studentKey').val() === root.child('secrets/student_passcode').val()"
           }
         }
       }
     },
     "quiz_records": {
-      ".read": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === 'PK2026'",
+      // Teachers can read student records
+      ".read": "root.child('authorized_teachers').child(auth.uid).child('passcode').val() === root.child('secrets/teacher_passcode').val()",
       "$recordId": {
-        ".write": "newData.child('studentKey').val() === 'student2026'"
+        // Students can submit attempt records by providing the student passcode
+        ".write": "newData.child('studentKey').val() === root.child('secrets/student_passcode').val()"
       }
     }
   }
