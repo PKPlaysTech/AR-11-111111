@@ -5,7 +5,7 @@ import { getAuth, signInAnonymously } from "firebase/auth"; // 1. Import Authent
 
 const firebaseConfig = {
   // Replace the string below with your real API key from Firebase Project Settings
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY, 
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "", 
   authDomain: "ar-11-111111.firebaseapp.com",
   projectId: "ar-11-111111",
   storageBucket: "ar-11-111111.firebasestorage.app",
@@ -18,26 +18,32 @@ const firebaseConfig = {
 // Initialize Firebase safely to prevent white screens
 let app, analytics, db, auth;
 
-try {
-  app = initializeApp(firebaseConfig);
-  analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
-  db = getDatabase(app);
-  auth = getAuth(app); 
-
-  if (typeof window !== "undefined") {
-    signInAnonymously(auth)
-      .then(() => {
-        console.log("AR Quest anonymous sign-in successful! Current UID:", auth.currentUser.uid);
-      })
-      .catch((error) => {
-        console.error("Firebase anonymous sign-in failed. Please check if Anonymous provider is enabled in Firebase Console:", error.message);
-      });
-  }
-} catch (error) {
-  console.error("Firebase initialization failed! Check your .env file:", error);
-  // Create dummy objects to prevent full app crash if Firebase fails
+if (!firebaseConfig.apiKey) {
+  console.error("FIREBASE API KEY IS MISSING! Please make sure your .env.local file is loaded properly.");
   db = {};
   auth = {};
+} else {
+  try {
+    app = initializeApp(firebaseConfig);
+    analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
+    db = getDatabase(app);
+    auth = getAuth(app); 
+
+    if (typeof window !== "undefined") {
+      signInAnonymously(auth)
+        .then(() => {
+          console.log("AR Quest anonymous sign-in successful! Current UID:", auth.currentUser.uid);
+        })
+        .catch((error) => {
+          console.error("Firebase anonymous sign-in failed. Please check if Anonymous provider is enabled in Firebase Console:", error.message);
+        });
+    }
+  } catch (error) {
+    console.error("Firebase initialization failed! Check your .env file:", error);
+    // Create dummy objects to prevent full app crash if Firebase fails
+    db = {};
+    auth = {};
+  }
 }
 
 export { db, auth };
