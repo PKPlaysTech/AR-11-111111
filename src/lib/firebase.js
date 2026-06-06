@@ -5,7 +5,7 @@ import { getAuth, signInAnonymously } from "firebase/auth"; // 1. Import Authent
 
 const firebaseConfig = {
   // Replace the string below with your real API key from Firebase Project Settings
-  apiKey: "YOUR_ACTUAL_API_KEY_HERE", 
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY, 
   authDomain: "ar-11-111111.firebaseapp.com",
   projectId: "ar-11-111111",
   storageBucket: "ar-11-111111.firebasestorage.app",
