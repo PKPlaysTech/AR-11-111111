@@ -41,12 +41,15 @@ export default function ARScanner() {
     if (rootEl) rootEl.style.backgroundColor = "transparent";
     
     // Force AR.js to recalculate video dimensions to fit the device screen perfectly
-    const resizeTimeout = setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 500);
+    // Apply multiple resize triggers to fix Android/Phone aspect ratio stretching bugs
+    const timers = [500, 1500, 3000, 5000].map(t => 
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, t)
+    );
     
     return () => {
-      clearTimeout(resizeTimeout);
+      timers.forEach(clearTimeout);
       document.documentElement.style.backgroundColor = "";
       document.body.style.backgroundColor = "#f8fafc";
       document.body.style.overflowX = originalOverflow || "hidden"; // Restore original or default
