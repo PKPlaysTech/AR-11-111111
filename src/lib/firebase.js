@@ -15,24 +15,30 @@ const firebaseConfig = {
   databaseURL: "https://ar-11-111111-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
+// Initialize Firebase safely to prevent white screens
+let app, analytics, db, auth;
 
-// Initialize Realtime Database
-export const db = getDatabase(app);
+try {
+  app = initializeApp(firebaseConfig);
+  analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
+  db = getDatabase(app);
+  auth = getAuth(app); 
 
-// 2. Initialize Auth and trigger invisible anonymous sign-in
-export const auth = getAuth(app); 
-
-if (typeof window !== "undefined") {
-  signInAnonymously(auth)
-    .then(() => {
-      console.log("AR Quest anonymous sign-in successful! Current UID:", auth.currentUser.uid);
-    })
-    .catch((error) => {
-      console.error("Firebase anonymous sign-in failed. Please check if Anonymous provider is enabled in Firebase Console:", error.message);
-    });
+  if (typeof window !== "undefined") {
+    signInAnonymously(auth)
+      .then(() => {
+        console.log("AR Quest anonymous sign-in successful! Current UID:", auth.currentUser.uid);
+      })
+      .catch((error) => {
+        console.error("Firebase anonymous sign-in failed. Please check if Anonymous provider is enabled in Firebase Console:", error.message);
+      });
+  }
+} catch (error) {
+  console.error("Firebase initialization failed! Check your .env file:", error);
+  // Create dummy objects to prevent full app crash if Firebase fails
+  db = {};
+  auth = {};
 }
 
+export { db, auth };
 export default app;

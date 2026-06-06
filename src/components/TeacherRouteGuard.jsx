@@ -17,22 +17,32 @@ export default function TeacherRouteGuard({ children }) {
   useEffect(() => {
     let active = true;
     
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        if (active) setCheckingAuth(false);
-      } else {
-        // If not logged in, try to sign in anonymously
-        try {
-          await signInAnonymously(auth);
-        } catch (err) {
-          console.error("Anonymous authentication failed:", err);
-          if (active) {
-            setError("Firebase connection failed. Please check your internet connection or API key.");
-            setCheckingAuth(false);
+    let unsubscribe = () => {};
+    
+    if (auth && typeof auth.onAuthStateChanged === 'function') {
+      unsubscribe = auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          if (active) setCheckingAuth(false);
+        } else {
+          // If not logged in, try to sign in anonymously
+          try {
+            await signInAnonymously(auth);
+          } catch (err) {
+            console.error("Anonymous authentication failed:", err);
+            if (active) {
+              setError("Firebase connection failed. Please check your internet connection or API key.");
+              setCheckingAuth(false);
+            }
           }
         }
+      });
+    } else {
+      // Firebase auth is broken or dummy object
+      if (active) {
+        setError("Firebase is not initialized properly. Check your API key.");
+        setCheckingAuth(false);
       }
-    });
+    }
 
     // Safety timeout: stop showing loading screen after 4 seconds even if Firebase is unresponsive
     const safetyTimeout = setTimeout(() => {
