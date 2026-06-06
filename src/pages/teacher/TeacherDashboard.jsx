@@ -80,7 +80,7 @@ export default function TeacherDashboard() {
               <List className="w-10 h-10 text-slate-300" />
             </div>
             <h2 className="text-xl font-bold text-slate-700 mb-2">No games yet</h2>
-            <p className="text-slate-500 max-w-md mx-auto mb-6">You haven't created any AR interactive quest! Click the button above to design your first magical learning adventure.</p>
+            <p className="text-slate-500 max-w-md mx-auto mb-6">You haven't created any AR treasure hunts! Click the button above to design your first magical learning adventure.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -92,7 +92,7 @@ export default function TeacherDashboard() {
                 <p className="text-xs text-slate-400 font-medium mb-3">
                   Updated: {formatTime(game.updatedAt || game.createdAt)}
                 </p>
-                <p className="text-slate-500 text-sm mb-4 line-clamp-2">{game.description || game.questions?.[0]?.question || "No description provided"}</p>
+                <p className="text-slate-500 text-sm mb-4 line-clamp-2">{game.questions?.[0]?.question || "No questions yet"}</p>
                 
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
                   <div className="flex flex-col">
