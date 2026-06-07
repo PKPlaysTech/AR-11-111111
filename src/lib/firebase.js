@@ -20,6 +20,7 @@ let app, analytics, db, auth;
 
 if (!firebaseConfig.apiKey) {
   console.error("FIREBASE API KEY IS MISSING! Please make sure your .env.local file is loaded properly.");
+  if (typeof window !== 'undefined') alert("Firebase API Key is missing! Please check your .env file.");
   db = {};
   auth = {};
 } else {
@@ -31,18 +32,22 @@ if (!firebaseConfig.apiKey) {
 
     if (typeof window !== "undefined") {
       signInAnonymously(auth)
-        .then(() => {
-          console.log("AR Quest anonymous sign-in successful! Current UID:", auth.currentUser.uid);
+        .then((cred) => {
+          console.log("AR Quest anonymous sign-in successful! Current UID:", cred.user.uid);
         })
         .catch((error) => {
-          console.error("Firebase anonymous sign-in failed. Please check if Anonymous provider is enabled in Firebase Console:", error.message);
+          console.error("Firebase anonymous sign-in failed:", error.message);
+          // Don't alert here to avoid spam, just log
         });
     }
   } catch (error) {
-    console.error("Firebase initialization failed! Check your .env file:", error);
-    // Create dummy objects to prevent full app crash if Firebase fails
-    db = {};
-    auth = {};
+    console.error("Firebase initialization failed:", error);
+    if (typeof window !== 'undefined') {
+      alert("Firebase Init Error: " + error.message);
+    }
+    // DO NOT mock db and auth as empty objects if it breaks the SDK.
+    // Let it be undefined so it throws a standard error, or just throw it.
+    throw error;
   }
 }
 
